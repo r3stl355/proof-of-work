@@ -2,8 +2,13 @@
 
 ## Summary
 
-Users can publish work requests to which other users can respond. Publisher can view all the submissions, accept (and pay) or reject responses. Users can only see their own submissions or responses to their requests. Payment is done on response acceptance but also requires the payee to approve payment.
+This application allows the users to publish work requests, to which other users can respond, potentially multiple times. Work request publisher can review the responses and reject or accept them. Publisher can also close the request preventing any subsequent responses from being submitted. User who sumbmitted the response will be paid if their response is accepted, but not if it was rejected. Response creator can also cancel the response. Some additional rules:
 
+- Every request needs a non-zero reward. Request publisher must have suffient amount of coin at the time of creating a request to cover the reward.
+- Every user can see all the non-closed requests raised by any other user, and respond to them as many times as they want.
+- User cannot respond to their own requests.
+- User can see only their own responses, and non-cancelled responses to their requests.
+- When the publisher accepts the response, the coin amount equivalent to a reward of the request is transferred to the responder, but the responder should accept the trasfer before those coins appear in their wallet.
 
 ## Pre-requisites
 
@@ -42,6 +47,6 @@ npm start
 
 This starts a server on `http://localhost:3000` serving the application UI.
 
-Usernames `alice`, `bob` and `charlie` are created by default, with each given 10 coins to use. This is a demo application so login only requires a username (all lower case) and no password
+Users `alice`, `bob` and `charlie` are created by default, with each given 10 coins to use. This is a demo application so login only requires a username (use one of those pre-created user names, all lower case) and no password.
 
 Switch between those users to test various scenarios, e.g. create a request as `alice`, respond to it as `bob`, etc.
