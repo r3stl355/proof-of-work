@@ -20,7 +20,7 @@ You need to have [Git], [Node.js] and [Daml] installed.
 - Get the code. Execute the following in Terminal window
 
 ```
-git clone https://r3stl355/
+git clone https://github.com/r3stl355/proof-of-work.git
 cd proof-of-work
 ```
 
