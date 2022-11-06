@@ -1,0 +1,29 @@
+module Coin where
+
+template Coin with
+    owner: Party
+  where
+    signatory owner
+
+    choice ProposeTransfer: ContractId TransferProposal
+      with newOwner : Party
+      controller owner
+      do
+        assertMsg "Cannot transfer coin to yourself" (owner /= newOwner)
+        create TransferProposal 
+          with
+            coin = this
+            newOwner
+
+template TransferProposal
+  with
+    coin: Coin
+    newOwner: Party
+  where
+    signatory (signatory coin)
+    observer (observer coin), newOwner
+
+    choice TransferProposal_Accept: ContractId Coin
+      controller newOwner
+      do
+        create coin with owner = newOwner

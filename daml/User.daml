@@ -1,0 +1,29 @@
+module User where
+
+import Work
+import Coin
+
+template User 
+  with
+    party: Party
+    id: Text
+    name: Text
+
+  where
+    signatory party
+
+    key party: Party
+    maintainer key
+
+    nonconsuming choice CreateWorkRequest: ContractId Request 
+      with
+        public: Party
+        content: Text
+        reward: [ContractId Coin.Coin]
+      controller party
+      do
+        -- Assure coins belong to the requester
+        forA reward (\coinCid -> do
+          coin <- fetch coinCid
+          assert (coin.owner == party))
+        create Request with sender = party, status = Work.Active, reward = length(reward), .. 

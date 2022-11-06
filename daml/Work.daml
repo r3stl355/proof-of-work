@@ -1,0 +1,68 @@
+module Work where
+
+import Coin
+
+data Status = Active | Closed | Accepted | Rejected | Cancelled
+  deriving (Eq, Show)
+
+template Request with
+    sender: Party
+    public: Party
+    content: Text
+    reward: Int
+    status: Status
+  where
+    signatory sender
+    observer public
+
+    key (sender, content): (Party, Text)
+    maintainer key._1
+
+    nonconsuming choice CreateResponse: ContractId Response with
+        responseContent: Text
+        responseSender: Party
+      controller responseSender
+      do
+        assertMsg "Cannot reply to a non-active request" (status == Active)
+        create Response with requestKey = (key this),  sender = responseSender, content = responseContent, status = Active
+
+    choice Close: ContractId Request
+      controller sender
+      do
+        create this with status = Closed
+
+template Response
+  with
+    requestKey: (Party, Text)
+    sender: Party
+    content: Text
+    status: Status
+  where
+    signatory sender
+    observer sender, requestKey._1
+
+    key (requestKey, sender, content): ((Party, Text), Party, Text)
+    maintainer key._2
+
+    choice Accept: ContractId Response
+      with payment: [ContractId Coin.Coin]
+      controller requestKey._1
+      do
+        (rid, request) <- fetchByKey @Work.Request requestKey
+        assertMsg "Cannot accept a non-active response" (status == Active)
+        assertMsg "Payment needs to match the reward" (length(payment) == request.reward)
+        forA payment (\coinCid -> exercise coinCid Coin.ProposeTransfer with newOwner = sender)
+
+        create this with status = Accepted
+
+    choice Reject: ContractId Response
+      controller requestKey._1
+      do
+        assertMsg "Cannot reject a non-active response" (status == Active)
+        create this with status = Rejected
+
+    choice Cancel: ContractId Response
+      controller sender
+      do
+        assertMsg "Cannot cancel a non-active response" (status == Active)
+        create this with status = Cancelled
